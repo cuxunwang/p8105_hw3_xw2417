@@ -1,0 +1,28 @@
+---
+title: "P8105 Homework 3 Solution"
+author: "Xun Wang"
+date: "10/06/2019"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+```
+
+This file is the solution to P8105 Homework 3 from Xun Wang (xw2417).
+
+## Problem 1
+
+This problem uses the *Instacart* dataset. 
+
+#### 1.1 
+
+The code chunk below
+
+
+## Problem 2
+
+
+
+## Problem 3
