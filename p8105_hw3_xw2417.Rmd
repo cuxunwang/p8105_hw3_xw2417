@@ -24,20 +24,21 @@ theme_set(theme_bw() + theme(legend.position = "bottom"))
 
 ## Problem 1
 
-This problem uses the *Instacart* dataset. 
+This problem uses the *Instacart* dataset.
 
-```{r}
+#### 1.1 Read datasets from Github
+
+The code chunk below reads the dataset *instacart* from Github package *p8105.datasets*.
+
+```{r read_instacart}
 library(p8105.datasets)
 data("instacart")
-
-
+janitor::clean_names(instacart)
 ```
 
+**Comments:** The *instacart* dataset read from Github is cleaned by `janitor::clean_names`. The *instacart* dataset has `r nrow(instacart)` rows and `r ncol(instacart)` columns. The **key** variables are the *order_id* and *product_id*. For example, in order 1 ordered by user 112108, Bulgarian Yogurt (product 49302) was the first to be added to the cart. This was the 4th time the user placed an order and this product was reordered by the user. The order was placed on Thursday between 10-11 am, 9 days after the user's last purchase. This product was placed at *yogurt* aisle (aisle_id 120) in the *dairy & eggs* department (department_id 16).
 
-#### 1.1 
-
-The code chunk below
-
+#### 1.2 *instacart* data analysis
 
 ## Problem 2
 
