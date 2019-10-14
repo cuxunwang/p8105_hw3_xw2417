@@ -196,3 +196,58 @@ df_brfss %>%
 ```
 
 ## Problem 3
+
+This problem uses the *accel* dataset.
+
+#### 3.1 Read and clean the dataset
+
+The code chunk below creates a dataset including all originally observed variables and values; having useful variable names; including a weekday vs weekend variable; and encoding data with reasonable variable classes. 
+
+```{r read_accel_data}
+accel_data = 
+  read.csv(file = "./data/accel_data.csv") %>% 
+  janitor::clean_names() %>%
+  pivot_longer(
+    activity_1:activity_1440,
+    names_to = "activity", 
+    names_prefix = "activity_",
+    values_to = "n_act"
+  ) %>% 
+  mutate(
+    day_para = recode(
+      day, "Monday" = "weekday", "Tuesday" = "weekday", "Wednesday" = "weekday", "Thursday" = "weekday", "Friday" = "weekday", "Saturday" = "weekend", "Sunday" = "weekend")
+  )
+```
+
+#### 3.2 Data analysis
+
+Traditional analyses of accelerometer data focus on the total activity over the day. Using your tidied dataset, aggregate accross minutes to create a total activity variable for each day, and create a table showing these totals. Are any trends apparent?
+
+```{r}
+accel_data %>% 
+  group_by(week, day) %>% 
+  summarize(
+    total_act = sum(n_act)
+  ) %>% 
+  select(week, day, total_act) %>% 
+  knitr::kable(format = "html", caption = "Table 4:  Total physical activity over the day")
+```
+
+**Comments:** It looks like the patient has more total physical activities during the weekend.
+
+Accelerometer data allows the inspection activity over the course of the day. Make a single-panel plot that shows the 24-hour activity time courses for each day and use color to indicate day of the week. Describe in words any patterns or conclusions you can make based on this graph.
+
+```{r}
+accel_data %>%
+  group_by(week, day) %>% 
+  ggplot(aes(x = activity, y = n_act, color = day_para)) + 
+  geom_line() +
+  labs(
+    title = "The 24-hour activity over the day",
+    x = "Time of a day",
+    y = "Physical activity",
+    caption = "Data from the CUMC"
+  )
+```
+
+**Comments:** From the plot, it looks like the patient has more physical activities during weekdays and the mainly differences are during the day time.
