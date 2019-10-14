@@ -33,12 +33,82 @@ The code chunk below reads the dataset *instacart* from Github package *p8105.da
 ```{r read_instacart}
 library(p8105.datasets)
 data("instacart")
-janitor::clean_names(instacart)
 ```
 
 **Comments:** The *instacart* dataset read from Github is cleaned by `janitor::clean_names`. The *instacart* dataset has `r nrow(instacart)` rows and `r ncol(instacart)` columns. The **key** variables are the *order_id* and *product_id*. For example, in order 1 ordered by user 112108, Bulgarian Yogurt (product 49302) was the first to be added to the cart. This was the 4th time the user placed an order and this product was reordered by the user. The order was placed on Thursday between 10-11 am, 9 days after the user's last purchase. This product was placed at *yogurt* aisle (aisle_id 120) in the *dairy & eggs* department (department_id 16).
 
 #### 1.2 *instacart* data analysis
+
+###### 1.2.1 Analysis 1: How many aisles are there, and which aisles are the most items ordered from?
+
+```{r creat_aisle_summary}
+aisle_summary = 
+  instacart %>%
+  group_by(aisle, aisle_id) %>%
+  summarize(n = n()) %>% 
+  arrange(n)
+```
+
+**Comments:** There are **`r nrow(aisle_summary)` aisles** and most items ordered are from aisle **`r rev(pull(aisle_summary, aisle))[1]`** with aisle id **`r rev(pull(aisle_summary, aisle_id))[1]`**.
+
+###### 1.2.2 Analysis 2: Make a plot that shows the number of items ordered in each aisle, limiting this to aisles with more than 10,000 items ordered. Arrange aisles sensibly, and organize your plot so others can read it.
+
+```{r plot_aisle_summary}
+aisle_summary %>% 
+  filter(n > 10000) %>% 
+  mutate(
+    aisle_id = as.character(aisle_id)) %>% 
+  ggplot(mapping = aes(x = reorder(aisle_id, n), y = n)) + 
+  geom_bar(stat = "identity") +
+  labs(
+    title = "Item numbers ordered from each aisle",
+    x = "Aisle IDs",
+    y = "Number of items ordered",
+    caption = "Data from the instacart"
+  )
+```
+
+**Comments:** The bar graph above shows the number of items ordered from each aisle. It only shows aisles with more than 10,000 items ordered. I sequence the bars by an ascending order of the number of items ordered. Because there is not enough space using real names of the aisle as the x aixs, I use *Aisle IDs* as the x axis. You can find a table showing "Aisle IDs" and "Aisle Names" below.
+
+```{r, echo=FALSE}
+aisle_summary %>% 
+  filter(n > 10000) %>% 
+  select(aisle_id, aisle) %>% 
+  knitr::kable(format = "html", caption = "Table 1: Aisle IDs vs. Aisle Names")
+```
+
+###### 1.2.3 Analysis 3: Make a table showing the three most popular items in each of the aisles “baking ingredients”, “dog food care”, and “packaged vegetables fruits”. Include the number of times each item is ordered in your table.
+
+```{r popular_items}
+instacart %>%
+  filter(aisle == c("baking ingredients", "dog food care", "packaged vegetables fruits")) %>%
+  group_by(aisle, product_name) %>%
+  summarize(order_number = n()) %>% 
+  filter(order_number == max(order_number)) %>% 
+  knitr::kable(format = "html", caption = "Table 2: Most popular items of the aisles “baking ingredients”, “dog food care”, and “packaged vegetables fruits” ")
+```
+
+**Comments:** The table above shows the most popular items in of the aisles “baking ingredients”, “dog food care”, and “packaged vegetables fruits”. They are Light Brown Suger, Organix Grain Free Chicken & Vegetable Dog Food and Organic Baby Soinach with 156, 14 and 3324 times of order respectively.
+
+###### 1.2.4 Analysis 4: Make a table showing the mean hour of the day at which Pink Lady Apples and Coffee Ice Cream are ordered on each day of the week; format this table for human readers (i.e. produce a 2 x 7 table).
+
+```{r order_hours}
+instacart %>%
+  filter(product_name == c("Pink Lady Apples", "Coffee Ice Cream")) %>% 
+  select(product_name, order_dow, order_hour_of_day) %>% 
+  group_by(product_name, order_dow) %>% 
+  summarize(
+    mean_hour = mean(order_hour_of_day)) %>% 
+  mutate(order_dow_char = c("Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat")) %>%
+  select(-order_dow) %>% 
+  pivot_wider(
+    names_from = "order_dow_char", 
+    values_from = "mean_hour") %>% 
+  knitr::kable(format = "html", digits = 2, caption = "Table 3:  Mean hour at which Pink Lady Apples and Coffee Ice Cream are ordered")
+```
+
+**Comments:** The table above shows the mean hour of the day at which Pink Lady Apples and Coffee Ice Cream are ordered on each day of the week. We can see that apples (fruits) are mostly ordered in the morning or around the noon, but ice creams are mostly ordered in the afternoon.
+
 
 ## Problem 2
 
