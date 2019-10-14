@@ -11,6 +11,7 @@ Besides loading `library` in the beginning, I also include figure preferences in
 
 ```{r setup, message=FALSE}
 library(tidyverse)
+library()
 
 knitr::opts_chunk$set(
   echo = TRUE，
@@ -33,6 +34,7 @@ The code chunk below reads the dataset *instacart* from Github package *p8105.da
 ```{r read_instacart}
 library(p8105.datasets)
 data("instacart")
+instacart = janitor::clean_names(instacart)
 ```
 
 **Comments:** The *instacart* dataset read from Github is cleaned by `janitor::clean_names`. The *instacart* dataset has `r nrow(instacart)` rows and `r ncol(instacart)` columns. The **key** variables are the *order_id* and *product_id*. For example, in order 1 ordered by user 112108, Bulgarian Yogurt (product 49302) was the first to be added to the cart. This was the 4th time the user placed an order and this product was reordered by the user. The order was placed on Thursday between 10-11 am, 9 days after the user's last purchase. This product was placed at *yogurt* aisle (aisle_id 120) in the *dairy & eggs* department (department_id 16).
@@ -112,6 +114,85 @@ instacart %>%
 
 ## Problem 2
 
+This problem uses the *BRFSS* dataset.
 
+#### 2.1 Read datasets from Github
+
+The code chunk below reads the dataset *BRFSS* from Github package *p8105.datasets*.
+
+```{r read_brfss}
+library(p8105.datasets)
+data("brfss_smart2010")
+brfss_smart2010 = janitor::clean_names(brfss_smart2010)
+```
+
+**Comments:** The *BRFSS* dataset read from Github is cleaned by `janitor::clean_names`. The *BRFSS* dataset has `r nrow(brfss_smart2010)` rows and `r ncol(brfss_smart2010)` columns. The **key** variables are the *Year*, *Locationdesc*, *Question* and *Response*. For example, in 2010 at Jefferson County, AL, for people who answered "Excellent" to the question " How is your general health?", the sample size is 94.
+
+#### 2.2 Data cleaning
+
+The code chunk below formats the data to use appropriate variable names;
+focuses on the “Overall Health” topic; includes only responses from “Excellent” to “Poor”; organizes responses as a factor taking levels ordered from “Poor” to “Excellent”.
+
+```{r clean_brfss}
+df_brfss = 
+  brfss_smart2010 %>% 
+  filter(topic == "Overall Health") %>% 
+  mutate(response = forcats::fct_relevel(response, c("Poor", "Fair", "Good", "Very good", "Excellent"))) %>% 
+  select(year, state = locationabbr, county = locationdesc, response, sample_size, data_value)
+```
+
+#### 2.3 Data Analysis
+
+###### 2.3.1 Analysis 1: In 2002, which states were observed at 7 or more locations? What about in 2010?
+
+```{r}
+county_2002 = 
+  df_brfss %>% 
+  filter(year == 2002) %>% 
+  group_by(state) %>%
+  filter(length(unique(county)) >= 7)
+
+county_2010 = 
+  df_brfss %>% 
+  filter(year == 2010) %>% 
+  group_by(state) %>%
+  filter(length(unique(county)) >= 7)
+```
+
+**Comments:** In 2002, `r unique(pull(county_2002, state))`  were observed at 7 or more locations; in 2010 `r unique(pull(county_2010, state))`  were observed at 7 or more locations.
+
+###### 2.3.2 Analysis 2: Construct a dataset that is limited to Excellent responses, and contains, year, state, and a variable that averages the data_value across locations within a state. Make a “spaghetti” plot of this average value over time within a state (that is, make a plot showing a line for each state across years – the geom_line geometry and group aesthetic will help).
+
+```{r}
+df_brfss %>% 
+  filter(response == "Excellent") %>% 
+  select(year, state, data_value) %>% 
+  group_by(year, state) %>% 
+  summarize(
+    ave_data = mean(data_value)) %>% 
+  ggplot(aes(x = year, y = ave_data, color = state)) + 
+  geom_line() +
+  labs(
+    title = "Average data values of different states by year",
+    y = "average data value",
+    caption = "Data from the BRFSS"
+  )
+```
+
+###### 2.3.3 Analysis 3: Make a two-panel plot showing, for the years 2006, and 2010, distribution of data_value for responses (“Poor” to “Excellent”) among locations in NY State.
+
+```{r}
+df_brfss %>% 
+  filter(state == "NY", year %in% c(2006, 2010)) %>% 
+  select(year, county, response, data_value) %>% 
+  ggplot(aes(x = response, y = data_value, color = county)) + 
+  geom_point() + 
+  facet_grid(. ~ year) +
+  labs(
+    title = "Health data value distribution in NY",
+    y = "Health data value",
+    caption = "Data from the BRFSS"
+  )
+```
 
 ## Problem 3
